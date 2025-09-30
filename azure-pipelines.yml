@@ -18,7 +18,19 @@ stages:
       - job: init
         displayName: Terraform Init Job
         steps:
-          - template: templates/terraform-init.yml
+          - task: TerraformTask@5
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              backendServiceArm: 'testHealthService'
+              backendAzureRmStorageAccountName: 'stgforhealth'
+              backendAzureRmContainerName: 'healthcnt'
+              backendAzureRmKey: 'health.tfstate'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/environment/dev'
+              commandOptions: '-reconfigure'
+
+         
+          # - template: templates/terraform-init.yml
             # parameters:
             #   environmentPath: 'environment/${{ parameters.testparameters }}'
 
@@ -31,7 +43,17 @@ stages:
       - job: terraformplan
         displayName: Terraform Plan
         steps:
-          - template: templates/terraform-init.yml
+          - task: TerraformTask@5
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              backendServiceArm: 'testHealthService'
+              backendAzureRmStorageAccountName: 'stgforhealth'
+              backendAzureRmContainerName: 'healthcnt'
+              backendAzureRmKey: 'health.tfstate'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/environment/dev'
+              commandOptions: '-reconfigure'
+          # - template: templates/terraform-init.yml
             # parameters:
     
             #   environmentPath: 'environment/${{ parameters.testparameters }}'
@@ -42,7 +64,8 @@ stages:
               command: 'plan'
               environmentServiceNameAzureRM: 'testHealthService'
               workingDirectory: '$(System.DefaultWorkingDirectory)/environment/dev'
-              commandOptions: '-reconfigure'
+            
+             
 
   # ---------------- Terraform Apply Stage ----------------
   - stage: terraformapply
@@ -52,10 +75,20 @@ stages:
       - job: terraformapply
         displayName: Terraform Apply
         steps:
-          - template: templates/terraform-init.yml
-            parameters:
+          - task: TerraformTask@5
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              backendServiceArm: 'testHealthService'
+              backendAzureRmStorageAccountName: 'stgforhealth'
+              backendAzureRmContainerName: 'healthcnt'
+              backendAzureRmKey: 'health.tfstate'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/environment/dev'
+              commandOptions: '-reconfigure'
+          # - template: templates/terraform-init.yml
+          #   parameters:
             
-              environmentPath: 'environment/${{ parameters.testparameters }}'
+          #     environmentPath: 'environment/${{ parameters.testparameters }}'
           - task: TerraformTask@5
             displayName: Terraform Apply
             inputs:
@@ -63,4 +96,5 @@ stages:
               command: 'apply'
               environmentServiceNameAzureRM: 'testHealthService'
               workingDirectory: '$(System.DefaultWorkingDirectory)/environment/dev'
-              commandOptions: '-reconfigure'
+              
+              
