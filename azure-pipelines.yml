@@ -1,0 +1,66 @@
+trigger: none
+pool: testSepPool
+parameters:
+  - name: testparameters
+    displayName: PARAMETERS
+    type: string
+    default: dev
+    values:
+      - dev
+      - prod
+
+
+
+stages:
+  - stage: terraforminit
+    displayName: TERRAFORM INIT
+    jobs:
+      - job: init
+        displayName: Terraform Init Job
+        steps:
+          - template: templates/terraform-init.yml
+            # parameters:
+            #   environmentPath: 'environment/${{ parameters.testparameters }}'
+
+
+  - stage: terraformplan
+    displayName: TERRAFORM PLAN
+    dependsOn: terraforminit
+    jobs:
+
+      - job: terraformplan
+        displayName: Terraform Plan
+        steps:
+          - template: templates/terraform-init.yml
+            # parameters:
+    
+            #   environmentPath: 'environment/${{ parameters.testparameters }}'
+          - task: TerraformTask@5
+            displayName: Terraform Plan
+            inputs:
+              provider: 'azurerm'
+              command: 'plan'
+              environmentServiceNameAzureRM: 'testHealthService'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/environment/dev'
+              commandOptions: '-reconfigure'
+
+  # ---------------- Terraform Apply Stage ----------------
+  - stage: terraformapply
+    displayName: TERRAFORM APPLY
+    dependsOn: terraformplan
+    jobs:
+      - job: terraformapply
+        displayName: Terraform Apply
+        steps:
+          - template: templates/terraform-init.yml
+            parameters:
+            
+              environmentPath: 'environment/${{ parameters.testparameters }}'
+          - task: TerraformTask@5
+            displayName: Terraform Apply
+            inputs:
+              provider: 'azurerm'
+              command: 'apply'
+              environmentServiceNameAzureRM: 'testHealthService'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/environment/dev'
+              commandOptions: '-reconfigure'
